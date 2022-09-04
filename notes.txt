@@ -1,0 +1,206 @@
+FIREBASE unique ID: crnw-db-9971d
+============================================================================================
+                                                    REACT
+=============================================================================================
+Class Component notes
+----------------------------------------------------------
+1. Declare the state variables inside 'this.state' object inside constructor of 'class App'
+2. Whenever we need a class component that needs to leverage some kind of API call to get data that
+    it needs to display in any appropriate UI, put that piece of code in componentDidMount() lifecycle method.
+3. Flow of rendering:
+    1.constructor
+    2.render()
+    3.function handling change of state(
+        for class component --> componentDidMount
+        for functional component --> handleChange() kind of function
+    )
+    4.re-render render()
+
+4. When using filtering on our base array/list, we do not want to change the main array as we may need it later.
+    Instead, we make a copy of the filtered array on every request for change and display using the filtered array
+    so that we can go back to the original array if we want to.
+5. Whichever block of code we need to render/re-render, we put that directly under render() method, and not inside 
+    the return inside the render() method
+6. If we want global access of a variable throught our App.js, we set it as a 'state variable'.
+    Note to self:   - Never directly mutate state variables. Always use this.setState()
+                    - Always filter from original list of data. Do not mutate the original list.
+                    - Always try to destructure variables from 'this.state' and change handler functions from 'this'
+                    - Re-rendering happens for 2 reasons: 'setState changes' and 'props changes'
+7. Use 'this.props' to pass values to and from App and other components
+8. Always use backticks ` for string interpolation or as template string.
+
+------------------------------------------------------------------------------
+Functional Component
+-------------------------------------------------------------------------------
+1. Types of functions:
+    - pure: Such function solely depend on the parameters being passed and it can run in isolation.
+    - impure: if it is to modify or rely on something outside of its scope and beyond the parameters being passed into it.
+    - side effects: if state of an entity that exists outside a function changes due to the function is a side effect.
+2. Hooks
+    - useState: encapsulates local state of an entity in a functional component
+    - useEffect: used to handle sideeffects. The second argument is a dependency array, which explicitely states that
+                    run the piece of code inside useEffect() only if its dependent states change, else do not re-render. 
+
+Note to Self:   We might get stuck in infinite re-render loop if state of an entity gets changed each
+                time a functional component renders itself. Like, 'fetch()' calls a foreign api to get
+                a set of 10 monsters and save it to a new memory location. This is treated as a new state
+                even though the values are same.
+
+--------------------------------------------------------------------------------------------------------------
+DOM vs Virtual DOM
+--------------------------------------------------------------------------------------------------------------
+1. Virtual DOM: JavaScript representation of real DOM.
+2. Real DOM --> Virtual DOM Snapshot --> Virtual DOM Copy
+    Real DOM: Actual HTML DOM seen on the browser.
+    Virtual DOM Snapshot: It is the actual copy of the Real DOM,
+    Virtual DOM Copy: It is the DOM that react actually modifies based on state change/user input. It makes the final
+                      changes and send it back to Snapshot DOM, which then finally makes those changes to the Real DOM.
+3. Go to options in Chrome Dev Tools(three dots) --> More Tools --> Rendering --> Paint Flashing
+    The elements that are re-rendered are flashed GREEN. By this we can find out which elements in DOM are getting rendered
+    or re-rendered again.
+
+------------------------------------------------------------------------------------------------------------------
+Router and Routing
+------------------------------------------------------------------------------------------------------------------
+BrowserRouter is the main component inside react-router-dom that helps us to make use of other important components
+- Enclose the App component inside BrowserRouter tags
+
+Routes - Routes component tells the dom the different routes that are going to be there during rendering
+- Enclose the routes inside Routes tags
+
+Route - Route component indicates the individual routes present and the path and component associated with it during rendering.
+- Route tag consist of path and component to render
+- index = {true} indicates that render this component too when you render the parent component
+
+Outlet - A component inside react-router-dom, which tells the dom where the code we want to render comes out from.
+- It is used to render nested routes, i.e., component inside of another component, so that both can be rendered simultaneously.
+
+Fragment - A subsitute for an html element when you want an enclosing parent tag but don't want to use an actual html element
+- It will enclose the contents and not reflect itself in the DOM at the same time.
+- Fragments let you group a list of children without adding extra nodes to the DOM.
+- There is a new, shorter syntax you can use for declaring fragments(<></> is same as <React.Fragment></React.Fragment>)
+- Fragments declared with the explicit <React.Fragment> syntax may have keys. It is usefull to render map elements without rendering
+    an additional div element. 'key' is the only attribute that can be passed to Fragment
+
+Link - Link is component just like anchor tag in html. It has 'to' attribute to indicate the path it is redirecting to
+
+-------------------------------------------------------------------------------------------------------------------------------
+FIREBASE --> NoSQL Database -- Collection --> Document --> Data 
+-------------------------------------------------------------------------------------------------------------------------------
+1. import initializeApp component from firebase/app
+2. import various authentication components from firebase/auth
+3. We need firebaseConfig file to utilize the firebase facilities
+4. We create object of GoogleAuthProvider because we may need multiple providers for different buttons, leading to different authentication page
+    like Google provider, Facebook provider, GitHub provider etc.
+5. Add some custom prompts for the provider
+6. We use getAuth() as function and not an object, because we want to keep the authentication system even, throughout the website.
+    - auth is singleton as it keeps track of the entire authentication state of the entire application. It is like a memory bank for states inside the application.
+7. Import the signIn utility inside signIn component and link an event onclick to the imported signIn function.
+
+doc - used to import Document from firebase Database
+getDoc - get the data inside a Document
+setDoc - set any data inside a Document
+
+SignInWithPopup - it is pretty straightforward. It pops up a login dialogbox, and continues from that point onwards. No disruption in DOM state per se.
+SignInWithRedirect - One caveat is that when the sing in page redirects us to Google Login Page, after we Login, it brings us back to the 
+    signIn page and remounts the DOM, resetting/flushing the previous state of DOM, before redirection. In order to preserve the state of the 
+    DOM(sign in page), use:
+    - useEffect from React (Hooks)
+    - getRedirectResult component from firebase/auth 
+    so that, when control returns back to sign page, the 'getRedirectResult' will restore the previous state of DOM from 'auth'(which is a getAuth()), and
+    continue from that point onwards.
+
+createUserDocumentFromAuth() - calls doc() to create the document inside firebase
+                             - calls getDoc() to check if data already exists for document of that name.
+                             - if not, calls setDoc() to create data inside that document
+
+SignupWithEmailAndPassword - it is a bit complicated, as in, the 'auth' object(user) that was coming from Google in 'SignInWithPopup' is now coming from the
+    html form component. Here we don't have that. So, we need another function 'createAuthUserWithEmailAndPassword()', that takes email and password as parameters
+    and calls firebase/auth's own utility function 'createUserWithEmailAndPassword()'. This function takes in auth, email and password as arguments and return us
+    a 'user' object, just like we received from Google Authentication.
+
+    Now, we use this user object(from SignUp Form) and send it as parameter to 'createUserDocumentFromAuth()'. We send another parameter as additionalInformation in
+    case some fields are null/empty in this user object(displayName is null)
+
+onAuthStateChange - It is an Observable Listener, that listens automatically for any change in current state.
+    It triggers itself automatically. It helps us in not using setCurrentUser() explicitely everywhere, where
+    there migh be a state change(like changing from sign in to sign out state and vice-versa). 
+    - It helps us in restricting code for tracking state change in one centralized place(user.context.jsx)
+    - It is an open Listener. It starts listening/keeping track of state by monitoring 'auth' and triggers callback 
+        every time state changes.
+    - It also returns 'unsubscribe' function for the observer, so we can just receive it and call it, when we want
+        onAuthStateChange to stop listening
+
+onAuthStateChangeListener - It returns back whatever we get back from onAuthStateChange
+
+How the control flows in onAuthStateChange ?
+    - Say, when we change the state of auth, using 'sign-in'. We, click submit button which triggers 'signInWithEmailAndPassword'
+    - 'signInWithEmailAndPassword' changes the state of 'auth'.
+    - Since, 'onAuthStateChange' is continuously listening to 'auth'. It registers a change in state and triggers the callback.
+    - callback function is onAuthStateChangeListener, which updates the current user with 'user' object received from onAuthStateChange,
+        using 'setCurrentUser'
+
+--------------------------------------------------------------------------------------------------------------
+Context and Provider in React -> UserContext, UserProvider
+--------------------------------------------------------------------------------------------------------------
+Why do we need context ?
+    - It is designed to share data that can be considered global throughout the React Component Tree
+    - Using context, we can avoid passing props through intermediate elements.
+    - Context lets you “broadcast” such data, and changes to it, to all components below.
+
+Context - it is a glorified hook that re-runs/re-renders different components which are hooked in to UserContext component.
+            If the state of UserContext component values(currentUser is changed using setCurrentUser) is changed by the hooked component
+            then it re-renders, or else it just re-runs the whole hooked component(jsx file)
+            - Creates a Context object. When React renders a component that subscribes to this Context object it will read the current
+            context value from the closest matching Provider above it in the tree.
+
+Provider - The components that want to consume the contexts are wrapped inside Provider.
+         - Every Context object comes with a Provider React component that allows consuming components to subscribe to context
+            changes
+         - The Provider component accepts a value prop to be passed to consuming components that are descendants of this Provider.
+         - One Provider can be connected to many consumers. Providers can be nested to override values deeper within the tree.
+         - Components wrapped inside Provider, can use 'Consumer' property(UserContext.Consumer) or use useContext react hook. 
+
+Context VS Provider -> Very important(State Management)
+    Body of object inside Context(createContext) in the one that is used by all components. The value to that body is set
+    inside UserProvider. So, we can think of UserProvider as the functionality that goes on the backend, to populate
+    the skeleton inside of UserContext.
+
+useContext vs useState 
+    useContext - returns context as an object
+    useState - sets the state of the context fields as an array
+
+------------------------------------------------------------------------------------------------------------
+Firestore DB, FIREBASE
+-------------------------------------------------------------------------------------------------------------
+Transaction - It is a word that represents a successful unit of work to a Database. Respects ACID properties.
+Batch - using writeBatch from firebase. Helps in successful transaction.
+      - writeBatch helps in attaching all the operations expected to perform in one transaction into one Batch,
+        and only when we are ready to fire, is actually when the Transaction begins.
+
+Asynchronous Fetching -
+If you have components that rely on asynchronous fetch code, then you will need to put some kind of safeguard so
+that you only render your component iff the actual data is present.
+
+Query - 
+
+Nested Routes within Components - 
+
+CategoryPreview -
+
+-------------------------------------------------------------------------------------------------------------
+Styled Components
+-------------------------------------------------------------------------------------------------------------
+- CS in JS helps in preventing styling clashes across projects.
+- While building large projects we might not remember the classnames used in a component and end up reusing the same
+    in another, which will eventually cause a clash in styling. What Styled Component does is, generate a unique class
+    name for each component, thus preventing any clash.
+
+- Nested styled components
+    - We can specifically target and style certain components differently if it lies inside a different container.
+     i.e., we can override the generalized styling of certain components, for eg. buttons, differently, if it lies
+     inside CartDropdownContainer from what it is styled on the SignIn or SignUp Page.
+    - We just write the component and its styling attributes inside the scope of the container under which we want 
+        the style to be overridden
+    - Whichever component we are trying to nest, that should be declared and initialized before and then overriden later.
+    - When adding animations on the css, the styling has to be declared beforehand
