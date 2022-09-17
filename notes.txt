@@ -1,4 +1,12 @@
 FIREBASE unique ID: crnw-db-9971d
+hosting link: https://steady-bombolone-a2ffd0.netlify.app
+
+STRIPE Keys:
+Publishable key:
+pk_test_51Lj1aASB4ZTejyG648LvwssapPUBksg0rNzratwGL6zHVvuqymATFLpJRQLouqZHgYRj9S61TyK1xrTf6j2uKIsV00Q2CqSxKQ
+
+Secret key:
+sk_test_51Lj1aASB4ZTejyG
 ============================================================================================
                                                     REACT
 =============================================================================================
@@ -204,3 +212,176 @@ Styled Components
         the style to be overridden
     - Whichever component we are trying to nest, that should be declared and initialized before and then overriden later.
     - When adding animations on the css, the styling has to be declared beforehand
+
+============================================================================================================
+REDUCERS and REDUX
+============================================================================================================
+- Reducers:
+    - Reducers are object representation of values that receive ACTIONS and these ACTIONS in turn will update
+        the values inside of the reducer object
+    - They are like functions that return back an object with shape of the data that we want to store(here currentUser).
+    - When user signs in, Reducer(here useReducer) dispatches out a new ACTION of SET_CURRENT_USER, with payload being the
+        'user' obaject
+    - Then 'currentUser' updates, so then useReducer as a hook knows that my reducer value is updated, and I am going to 
+        generate out a new state object.
+    - Then useReducer hook will will check if there is a new reducer value for this state object, so re-run this whole
+        functional component 'UserProvider'.
+    - Then reducer, dispatches out a 'currentUser' update to all the listeners that are hooked into this context.
+    - Reducers are typically used when multiple items are updated on change of state of one item. In our case, change
+        state of cartItems leads to change in 'cartCount' and 'cartTotal'. So, Reducer is perfect to use here, so that Instead
+        of mantaining seperate hooks to the state of 'cartItems', we maintain them in one place, as one object and update it
+        at once, whenever state of 'cartItems' change
+
+    - How to use reducer ? Things needed ?
+     - one reducer function that returns the final object with all the expected fields/structure.
+     - one dispatcher, that collects the current state of the fields and dispatches an action object to reducer
+     - one useReducer() function, that calls our reducer function with initial state of the final result object.
+     - useReducer() always return state and dispatch.
+     - 'dispatch' returned/received from useReducer(), is actually the dispatcher function that dispatches action
+        only to the reducer mentioned inside useReducer hook.
+     - reducer function takes 'state' and 'action' as parameter.
+     - action object has 'type' and 'payload' as two fields
+     - state has the final structure of the output object. Payload has the fields are to be modified in the current
+        state structure, keeping rest of the structure intact.
+
+REDUX
+ - Single source of truth. All of your state should be stored in one place.
+ - Hooks in REDUX:
+    - useDispatch:
+        React hook for dispatching actions. It dispatches action to 'root reducer', which then dispatches the action to every other reducer present.
+    
+    - useSelector:
+        Helps to get values present inside of REDUX, into our components.
+        It extracts off the value that we want from the entire REDUX STORE.
+
+--------------------------------------------------------------------------------------------------------------------
+Difference between Context API vs REDUX
+--------------------------------------------------------------------------------------------------------------------
+1. Accesibility:
+    - with Context API, the accessibility can be segmented based on the requirement by components.
+    - with REDUX, we do not have option, but to be available to all components globally. It is global state management.
+----------------------
+Our Context structure:
+----------------------
+UserContext {
+    CategoryContext {
+        CartContext {
+            App {
+                Shop Preview {
+                    Component 1,
+                    Component 2,
+                    Component 3,
+                    Component 4
+                },
+                Cart {
+                    Component 5,
+                    Component 6
+                }
+            }
+        }
+    }
+}
+
+- Any component inside the contexts can access the value inside these contexts. The access direction is inside-out.
+- Using Context API, instead of wrapping entire App inside of all the contexts, we can restrict the scope of context 
+    to only those components that are actually using the values inside of that particular context directly.
+    In other words, we can 'segment the accessibility of the contexts, throughout the App'.
+
+2. Flow of Data:
+
+Context API
+- Component dispatches action to reducers directly or via action creators, then Reducer sends the values 
+    back to the component to use.
+REDUX
+- Multiple reducers are combined as Root Reducer, that receives a combined Action from all the components
+    and sends the values as one state to all the components, which are then destructured and used by components
+    individually.
+
+------------------------------------------------------------------------------------------------------------------
+STEPS TO USE REDUX
+---------------------------------------------------------------------------------------------------------------
+
+1. Installation and Setup
+    install redux, react-redux, redux-logger
+2. Setup a 'store' folder --> stores all the Redux fields, all dispatches, actions, state etc.
+    {
+        middlewares: [ logger ],
+        composedEnhancers: compose(applyMiddleware(...middlewares)),
+        store: createStore(root-reducer, undefined, composedEnhancers)
+    }
+    - Wrap 'App' with redux's 'Provider' that passes 'store' as a prop, to all App.
+    - Create a file 'root-reducer' --> combined reducer file
+    - Create folders inside of 'store' for smaller/specific reducers like user, cart, categories
+
+3. Since we are no longer using 'UserProvider', so we setup the onAuthStateChangeListener in the top-level component,
+    that mounts first, i.e., App
+4. user.action.js --> global setCurrentUser helper function that can be used globally for dispatching Actions
+
+5. user.types.js --> global collection of action types, i.e., SET_CURRENT_USER, SET_IS_CART_OPEN etc.
+
+6. reducer.utils --> has global reducer utility functions, like, createAction
+
+7. user.selector.js --> useSelector utility functions for global use.
+
+8. Flow of Data: 
+        dispatch function(from useDispatch hook) --> root-reducer --> all reducers
+   Instead of using dispatch returned by 'useReducer', we use 'dispatch' provided by 'Redux'. It dispatches the action
+   to userReducer which returns the final { state, payload }
+
+--------------------------------------------------------------------------------------------------------------------------------
+   Lesson 157 - Business Logic in our selector
+--------------------------------------------------------------------------------------------------------------------------------
+
+- Usually while working with Context API, we put our transformation logic of 'getCategoriesAndDocuments()' function inside of our
+    firebase utility helper function, because when we met the fetch statement, chances are we probably want to extrapolate this
+    data in a format that we use i.e., categoriesMap
+
+- Using REDUX,
+    We pull data from firebase, but in its most basic form(i.e., just pull 'docs' as an array), and then when we store it in our
+        reducer, we extrapolate the logic that transforms it into 'categoryMap' into a 'selector'(here, category.selector.js),
+    Reason: Reducer should always store the most basic format, i.e., the data that we receive from an API, without any modification
+            to its state/transformation logic. Then, using the 'Selector' we transform that data received from API, into the final
+            shape that we want it to be. The reason for this is that we can have multiple selectors that are performing different 
+            transformation on the base(trivial) format of the data we have/receive.
+            In other words, we receive all the data from database in its trivial form, then from there we can select one or multiple
+            items, in any desired format.
+
+-------------------------------------------------------------------------------------------------------------------------------------
+MEMOIZATION in REDUX
+-------------------------------------------------------------------------------------------------------------------------------------
+- The big problem with Redux is that inside of root-reducer, we have all the reducers that are used. But, even if state of one of the 
+    reducer is changed, all the reducers are re-rendered unnecessarily. In order to prevent that, we use memoization to re-render only
+    the reducer whose state has actually changed, and stop others (i.e., use the cached data we have already during the first time they
+    where rendered)
+- The memoization setup is made inside of 'selector.js' file, where we also have our transformation logic.
+- 
+
+---------------------------------------------------------------------------------------------------------------------------------------
+REDUX Tools
+---------------------------------------------------------------------------------------------------------------------------------------
+- Redux Persist --> It remembers the state even after refresh
+- Redux Dev Tools --> Makes debugging Redux States easier
+
+---------------------------------------------------------------------------------------------------------------------------------------
+REDUX - Thunk
+---------------------------------------------------------------------------------------------------------------------------------------
+Def: Asynchronous sideeffects event handling in REDUX.
+- The components are restricted to receive values and return values, and the ACTION creation particular
+     is handled inside of seperate middleware. It isolates the action creation flow and helps the scale
+     the application.
+
+-----------------------------------------------------------------------------------------------------------
+STRIPE
+-----------------------------------------------------------------------------------------------------------
+How to set up ?
+ - npm install @stripe/stripe-js @stripe/react-stripe-js
+ - create a .env file at root and store public key from STRIPE.
+ - create a utils file 'stripe.utils' and export 'stripePromise' - which has the public key from .env file
+ - import Elements from react-stripe-js and stripePromise from stripe.utils
+ - wrap App component by Elements component that takes a parameter stripe={stripePromise}
+ - WE ARE DONE !!
+
+How to deploy project to Netlify using netlify cli ?
+ - npm install -g netlify-cli
+ - netlify login --> Allow Permission
+ - netlify dev

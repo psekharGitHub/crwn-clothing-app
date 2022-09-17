@@ -1,13 +1,13 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import FormInput from "../components/form-input/form-input.component";
 import Button, { BUTTON_TYPE_CLASSES } from "../components/button/button.component";
-
-import { signInWithGooglePopup, signInAuthUserWithEmailAndPassword } from "../utils/firebase/firebase.utils";
 
 //Need not hook to UserContext everytime as we use onAuthStateChange
 // import { UserContext } from "../contexts/user.context";
 
 import './sign-in-form.styles.scss';
+import { googleSignInStart, emailSignInStart } from "../store/user/user.action";
 
 const defaultFormFields = {
     email: '',
@@ -15,6 +15,7 @@ const defaultFormFields = {
 };
 
 const SignInForm = () => {
+    const dispatch = useDispatch();
     const [ formFields,setFormFields ] = useState(defaultFormFields);
     const { email, password } = formFields; 
 
@@ -27,8 +28,13 @@ const SignInForm = () => {
     }
 
     const signInWithGoogle = async () => {
-        const { user } = await signInWithGooglePopup(); //destructuring directly
-        console.log(user);
+        // Dispatching SAGA
+        dispatch(googleSignInStart());
+
+        // Triggering signInWithGoogle utility directly
+        //const { user } = await signInWithGooglePopup(); //destructuring directly
+        // console.log(user);
+        
         // setCurrentUser(user);
         // No need to createUserDocument here as onAuthStateChange listener is already keeping track of user state
         //, so we centralize this segment of creating new document, all under useEffect in user.context.
@@ -38,8 +44,12 @@ const SignInForm = () => {
         event.preventDefault();
 
         try {
-            const { user } = await signInAuthUserWithEmailAndPassword(email, password);
-            console.log(user);
+            // Dispatching SAGA
+            dispatch(emailSignInStart(email, password));
+
+            // Triggering signInWithEmailAndPassword utility directly
+            // const { user } = await signInAuthUserWithEmailAndPassword(email, password);
+            // console.log(user);
 
             // setCurrentUser(user);
 

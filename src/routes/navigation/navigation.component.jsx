@@ -1,30 +1,27 @@
-import { Fragment,useContext } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Fragment } from 'react';
+import { Outlet } from 'react-router-dom';
 import { ReactComponent as CrwnLogo } from '../../assets/crown.svg';
+import { useSelector, useDispatch } from 'react-redux';
 
 import CartIcon from '../../components/cart-icon/cart-icon.component';
 import CartDropdown from '../../components/cart-dropdown/cart-dropdown.component';
 
-import { UserContext } from '../../contexts/user.context';
-import { CartContext } from '../../contexts/cart.context';
+import { selectCurrentUser } from '../../store/user/user.selector';
+import { selectIsCartOpen } from '../../store/cart/cart.selector';
 
-import { signOutUser } from '../../utils/firebase/firebase.utils';
+import { signOutStart } from '../../store/user/user.action';
 import {  NavigationContainer, LogoContainer, NavLinks, NavLink } from './navigation.styles';
 // import './navigation.styles.scss'
 
 const Navigation = () => {
+  const dispatch = useDispatch(); 
 
-  const { currentUser,setCurrentUser } = useContext(UserContext);
-  console.log(currentUser);
+  // here 'state' refers to the state/structure of the entire root reducer(composed of multiple reducers)
+  const currentUser  = useSelector(selectCurrentUser);
 
-  const { isCartOpen } = useContext(CartContext);
+  const isCartOpen = useSelector(selectIsCartOpen);
 
-
-  const signOutHandler = async() => {
-    const res = await signOutUser();
-    // console.log(res);
-    setCurrentUser(null); 
-  }
+  const signOutUser = () => dispatch(signOutStart());
 
     return (
       <Fragment>
@@ -37,7 +34,7 @@ const Navigation = () => {
                     Shop
                 </NavLink>
                 {
-                  currentUser ? <NavLink as='span' onClick={signOutHandler}>SIGN OUT</NavLink>
+                  currentUser ? <NavLink as='span' onClick={signOutUser}>Sign Out</NavLink>
                   :
                   <NavLink to='/auth'>
                       Sign In

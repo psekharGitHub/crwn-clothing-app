@@ -1,18 +1,21 @@
-import { useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { CartContext } from '../../contexts/cart.context';
+import { selectCartItems } from '../../store/cart/cart.selector';
+import { clearItemFromCart, addItemToCart, removeItemFromCart } from '../../store/cart/cart.action';
 
 import './checkout-item.styles.scss';
 
 
 const CheckoutItem = ({cartItem}) => {
-    const { name, imageUrl, price, quantity } = cartItem;
-    const { addItemToCart, removeItemFromCart, clearItemFromCart } = useContext(CartContext);
+    const dispatch = useDispatch();
 
-    // Helper/Handler Functions
-    const clearItemHandler = () => clearItemFromCart(cartItem);
-    const addItemHandler = () => addItemToCart(cartItem);
-    const removeItemHandler = () => removeItemFromCart(cartItem);
+    const { name, imageUrl, price, quantity } = cartItem;
+    const cartItems = useSelector(selectCartItems);
+
+    // Helper/Handler Functions --> with REDUX: They are Action Dispatchers
+    const clearItemHandler = () => dispatch(clearItemFromCart(cartItems, cartItem));
+    const addItemHandler = () => dispatch(addItemToCart(cartItems, cartItem));
+    const removeItemHandler = () => dispatch(removeItemFromCart(cartItems, cartItem));
 
     return (
         <div className='checkout-item-container'>

@@ -32,6 +32,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+// eslint-disable-next-line
 const firebaseApp = initializeApp(firebaseConfig);
 
 const googleProvider = new GoogleAuthProvider();
@@ -73,27 +74,24 @@ export const getCategoriesAndDocuments = async () => {
   const collectionRef = collection(db, 'categories');
   // console.log(collectionRef);
 
+  // signOutUser(); // Force Sign Out
+
   const q = query(collectionRef);
 
   const querySnapshot = await getDocs(q);
   // console.log(querySnapshot);
 
-  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
-    const { title, items } = docSnapshot.data();
-    acc[title.toLowerCase()] = items;
-    return acc;
-  }, {});
-
-  return categoryMap;
+  // Now, this function will return 'categories' as an array.(trivial form)
+  return querySnapshot.docs.map(docSnapshot => docSnapshot.data());
 }
 
 export const createUserDocumentFromAuth = async (userAuth, additionalInformation={}) => {
     const userDocRef = doc(db, 'users', userAuth.uid);
 
-    console.log(userDocRef);
+    // console.log(userDocRef);
 
     const userSnapshot = await getDoc(userDocRef);  //extracts the data inside the Document userDocRef
-    console.log(userSnapshot);
+    // console.log(userSnapshot);
     
     if (!userSnapshot.exists()) {
       /** For signup displayName is null, as createUserWithEmailAndPassword takes email and passwords as 
@@ -114,7 +112,7 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
       }
     } // checks if the data even exists or not ?
 
-    return userDocRef;
+    return userSnapshot;
 }
 
 export const createAuthUserWithEmailAndPassword = async(email, password) => {
@@ -133,3 +131,17 @@ export const signOutUser = async () => await signOut(auth);
 
 //auth is keeping track of the state of the user i.e., whether sign in or sign out. even in between refreshes
 export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback);
+
+// NEW METHOD FOR SAGA: Promise-version of checking is auth state has changed or not
+// A substitute to onAuthStateChangedListener
+export const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe =  onAuthStateChanged(
+      auth, 
+      (userAuth) => {
+        unsubscribe();
+        resolve(userAuth);
+      }, reject
+      );
+  });
+}
