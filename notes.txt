@@ -1,5 +1,6 @@
 FIREBASE unique ID: crnw-db-9971d
 hosting link: https://steady-bombolone-a2ffd0.netlify.app
+https://63262789d9d3bf164bb8e6a9--steady-bombolone-a2ffd0.netlify.app/
 
 STRIPE Keys:
 Publishable key:
