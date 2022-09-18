@@ -1,0 +1,6 @@
+How to convert from js version to ts version ?
+1. change category.js to ts file. Change the category types from object to enum
+
+
+------------------------------------------------------------------------------
+- Action Creators create action and also type check actions against the action they hold

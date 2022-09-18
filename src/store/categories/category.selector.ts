@@ -1,3 +1,7 @@
+// Imports for Typescript
+import { CategoriesState } from "./category.reducer";
+import { CategoryMap } from "./category.types";
+
 /**  Lesson 157 - Selector Bussiness Logic
  * 
  * This selector receives the data and transforms it into an array with title as index
@@ -22,7 +26,7 @@ import { createSelector } from "reselect";
  * break them up into 3 parts, out of which, last 2 are memoized selectors, that will help 
  * prevent unnecessary re-render.
  *  */  
-const selectCategoryReducer = (state) => state.categories;
+const selectCategoryReducer = (state): CategoriesState => state.categories;
 
 /** Decalaring Memoized Selector
  *  Takes 2 arguments: array of input selectors and array of output selectors
@@ -45,11 +49,11 @@ export const selectCategories = createSelector(
  */
 export const selectCategoriesMap = createSelector(
     [selectCategories],
-    (categories) => categories.reduce((acc, category) => {
+    (categories): CategoryMap => categories.reduce((acc, category) => {
         const { title, items } = category;
         acc[title.toLowerCase()] = items;
         return acc;
-    }, {})
+    }, {} as CategoryMap)
 );
 
 export const selectCategoriesIsLoading = createSelector(
